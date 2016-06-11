@@ -1,2 +1,102 @@
-// Multi Feed Loader Script by Taufik Nurrohman
-var mf_defaults={feedsUri:[{name:"Posting JQuery",url:"http://www.dte.web.id",tag:"JQuery"},{name:"Posting CSS",url:"http://www.dte.web.id",tag:"CSS"},{name:"Widget-Widget Blogger",url:"http://www.dte.web.id",tag:"Widget"}],numPost:4,showThumbnail:true,showSummary:true,summaryLength:80,titleLength:"auto",thumbSize:72,newTabLink:false,containerId:"feed-list-container",listClass:"list-entries",readMore:{text:"More",endParam:"?max-results=20"},autoHeight:false,current:0,onLoadFeed:function(a){},onLoadComplete:function(){},loadFeed:function(c){var d=document.getElementsByTagName("head")[0],a=document.getElementById(this.containerId),b=document.createElement("script");b.type="text/javascript";b.src=this.feedsUri[c].url+"/feeds/posts/summary"+(this.feedsUri[c].tag?"/-/"+this.feedsUri[c].tag:"")+"?alt=json-in-script&max-results="+this.numPost+"&callback=listEntries";d.appendChild(b)}};for(var i in mf_defaults){mf_defaults[i]=(typeof(multiFeed[i])!==undefined&&typeof(multiFeed[i])!=="undefined")?multiFeed[i]:mf_defaults[i]}function listEntries(q){var p=q.feed.entry,c=mf_defaults,h=document.getElementById(c.containerId),a=document.createElement("div"),d="<ul>",l=c.feedsUri.length,n,k,m,g;for(var f=0;f<c.numPost;f++){if(f==p.length){break}n=(c.titleLength!=="auto")?p[f].title.$t.substring(0,c.titleLength)+(c.titleLength<p[f].title.$t.length?"&hellip;":""):p[f].title.$t;m=("summary" in p[f])?p[f].summary.$t.replace(/<br ?\/?>/g," ").replace(/<.*?>/g,"").replace(/[<>]/g,""):"";m=(c.summaryLength<m.length)?m.substring(0,c.summaryLength)+"&hellip;":m;g=("media$thumbnail" in p[f])?'<img src="'+p[f].media$thumbnail.url.replace(/\/s72(\-c)?\//,"/s"+c.thumbSize+"-c/")+'" style="width:'+c.thumbSize+"px;height:"+c.thumbSize+'px;">':'<span class="fake-img" style="width:'+c.thumbSize+"px;height:"+c.thumbSize+'px;"></span>';for(var e=0,b=p[f].link.length;e<b;e++){k=(p[f].link[e].rel=="alternate")?p[f].link[e].href:"#"}d+='<li><div class="inner"'+(!c.autoHeight?' style="height:'+c.thumbSize+'px;overflow:hidden;"':"")+">";d+=(c.showThumbnail)?g:"";d+='<div class="title"><a href="'+k+'"'+(c.newTabLink?' target="_blank"':"")+">"+n+"</a></div>";d+='<div class="summary">';d+="<span"+(!c.showSummary?' style="display:none;"':"")+">";d+=(c.showSummary)?m:"";d+="</span></div>";d+='<span style="display:block;clear:both;"></span></div></li>'}d+="</ul>";d+='<div class="more-link"><a href="'+c.feedsUri[c.current].url.replace(/\/$/,"")+"/search/label/"+c.feedsUri[c.current].tag+c.readMore.endParam+'"'+(c.newTabLink?' target="_blank"':"")+">"+c.readMore.text+"</a></div>";a.className=c.listClass;a.innerHTML='<div class="main-title"><h4>'+c.feedsUri[c.current].name+"</h4></div>"+d;h.appendChild(a);c.onLoadFeed(c.current);if((c.current+1)<l){c.loadFeed(c.current+1)}if((c.current+1)==l){c.onLoadComplete()}c.current++}mf_defaults.loadFeed(0);
+/*!
+ * BLOGGER TOC WITH ACCORDION EFFECT (SORT BY LABEL)
+ * ---------------------------------------------------
+ * by Taufik Nurrohman
+ * URL: http://gplus.to/tovic
+ * ---------------------------------------------------
+ */
+ 
+/*
+var toc_config = {
+    url: 'http://dte-feed.blogspot.com',
+    containerId: 'table-of-content',
+    showNew: 10,
+    newText: ' - <strong style="font-weight:bold;font-style:italic;color:red;">Baru!</strong>',
+    sortAlphabetically: {
+        thePanel: true,
+        theList: true
+    },
+    maxResults: 9999,
+    activePanel: 1,
+    slideSpeed: {
+        down: 400,
+        up: 400
+    },
+    slideEasing: {
+        down: null,
+        up: null
+    },
+    slideCallback: {
+        down: function() {},
+        up: function() {}
+    },
+    clickCallback: function() {},
+    jsonCallback: '_toc',
+    delayLoading: 0
+};
+*/
+ 
+(function(w, d) {
+    var cont = d.getElementById(toc_config.containerId),
+        head = d.getElementsByTagName('head')[0],
+        category = [];
+    w[toc_config.jsonCallback] = function(json) {
+        var entry = json.feed.entry,
+            cat = json.feed.category,
+            title, link, label, skeleton = "";
+        for (var h = 0, hen = cat.length; h < hen; ++h) {
+            category.push(cat[h].term);
+        }
+        for (var f = 0, fen = entry.length; f < fen; ++f) {
+            if (toc_config.showNew || toc_config.showNew > 0) {
+                if (f < toc_config.showNew + 1) {
+                    entry[f].title.$t += ' %new%';
+                }
+            }
+        }
+        entry = (toc_config.sortAlphabetically.theList) ? entry.sort(function(a, b) {
+            return (a.title.$t.localeCompare(b.title.$t));
+        }) : entry;
+        if (toc_config.sortAlphabetically.thePanel) category.sort();
+        for (var g = 0, gen = category.length; g < gen; ++g) {
+            skeleton += '<h3 class="toc-header">' + category[g] + '</h3>';
+            skeleton += '<div class="toc-content"><ol>';
+            for (var i = 0, ien = entry.length; i < ien; ++i) {
+                title = entry[i].title.$t;
+                for (var j = 0, jen = entry[i].link.length; j < jen; ++j) {
+                    if (entry[i].link[j].rel == "alternate") {
+                        link = entry[i].link[j].href;
+                        break;
+                    }
+                }
+                for (var k = 0, ken = entry[i].category.length; k < ken; ++k) {
+                    if (category[g] == entry[i].category[k].term) {
+                        skeleton += '<li><a href="' + link + '">' + title.replace(/ \%new\%$/, "") + '</a>' + (title.match(/\%new\%/) ? ' ' + toc_config.newText : '') + '</li>';
+                    }
+                }
+            }
+            skeleton += '</ol></div>';
+        }
+        cont.innerHTML = skeleton;
+        if (typeof jQuery != 'undefined') {
+            $('#' + toc_config.containerId + ' .toc-content').hide();
+            $('#' + toc_config.containerId + ' .toc-header').click(function() {
+                if ($(this).hasClass('active')) return;
+                toc_config.clickCallback(this);
+                $('#' + toc_config.containerId + ' .toc-header').removeClass('active').next().slideUp(toc_config.slideSpeed.up, toc_config.slideEasing.up, toc_config.slideCallback.up);
+                $(this).addClass('active').next().slideDown(toc_config.slideSpeed.down, toc_config.slideEasing.down, toc_config.slideCallback.down);
+            }).eq(toc_config.activePanel - 1).addClass('active').next().slideDown(toc_config.slideSpeed.down, toc_config.slideEasing.down, toc_config.slideCallback.down);
+        }
+    };
+    var s = d.createElement('script');
+    s.src = toc_config.url.replace(/\/$/, "") + '/feeds/posts/summary?alt=json-in-script&max-results=' + toc_config.maxResults + '&callback=' + toc_config.jsonCallback;
+    if (toc_config.delayLoading == "onload") {
+        w.onload = function() {
+            head.appendChild(s);
+        };
+    } else {
+        w.setTimeout(function() {
+            head.appendChild(s);
+        }, toc_config.delayLoading);
+    }
+})(window, document);
